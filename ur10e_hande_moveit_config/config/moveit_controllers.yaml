@@ -1,14 +1,15 @@
 # MoveIt uses this configuration for controller management
-
+# MoveIt uses this configuration for controller management
 moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 
 moveit_simple_controller_manager:
   controller_names:
-    - manipulator_controller
-    - gripper_controller
+    - scaled_joint_trajectory_controller  # 실제 UR 컨트롤러
+    - gripper_controller                  # fake 그리퍼 컨트롤러
 
-  manipulator_controller:
+  scaled_joint_trajectory_controller:
     type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
     joints:
       - shoulder_pan_joint
       - shoulder_lift_joint
@@ -16,9 +17,9 @@ moveit_simple_controller_manager:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
+
   gripper_controller:
-    type: GripperCommand
+    type: FollowJointTrajectory  # GripperCommand 대신 FollowJointTrajectory 사용
+    action_ns: follow_joint_trajectory
     joints:
       - robotiq_hande_left_finger_joint
-    action_ns: gripper_cmd
-    default: true

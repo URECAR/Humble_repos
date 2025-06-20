@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
-  <xacro:include filename="$(find hande_description)/urdf/robotiq_hande_gripper.xacro"/>
+  <xacro:include filename="$(find hande_description)/urdf/robotiq_hande_gripper.xacro"/> <!-- 그리퍼 추가 -->
 
-  <xacro:macro name="ur10e_hande" params="
+  <xacro:macro name="ur10e_hande_robot" params="
     parent
     *origin
     ur_type
@@ -11,22 +11,24 @@
     kinematics_parameters_file
     physical_parameters_file
     visual_parameters_file
+    use_fake_hardware
     ">
 
-    <!-- UR10e 로봇 생성 -->
+    <!--This will create the specific robot-->
     <xacro:ur_robot
       name="${ur_type}"
       tf_prefix=""
-      parent="${parent}"
+      parent="world"
       joint_limits_parameters_file="${joint_limits_parameters_file}"
       kinematics_parameters_file="${kinematics_parameters_file}"
       physical_parameters_file="${physical_parameters_file}"
       visual_parameters_file="${visual_parameters_file}"
+      use_fake_hardware="false"    
+      use_tool_communication="true"
+      generate_ros2_control_tag="true"
     >
-      <xacro:insert_block name="origin"/>
+      <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:ur_robot>
-
-    <!-- Hand-E 그리퍼를 tool0에 연결 (올바른 매크로 이름) -->
     <xacro:robotiq_hande_gripper
       name="robotiq_hande_gripper"
       prefix=""
@@ -39,8 +41,8 @@
       data_bits="8"
       stop_bit="1"
       slave_id="9"
-      use_fake_hardware="true"
+      use_fake_hardware="${use_fake_hardware}"
     />
-
   </xacro:macro>
+
 </robot>

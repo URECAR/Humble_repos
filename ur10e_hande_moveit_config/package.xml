@@ -4,7 +4,7 @@
   <name>ur10e_hande_moveit_config</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the ur10e_hande with the MoveIt Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the ur10e_hande_robot with the MoveIt Motion Planning Framework
   </description>
   <maintainer email="baejh08@gmail.com">baejh08</maintainer>
 
@@ -43,6 +43,7 @@
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>ur10e_hande_description</exec_depend>
   <exec_depend>warehouse_ros_mongo</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
 
   <export>

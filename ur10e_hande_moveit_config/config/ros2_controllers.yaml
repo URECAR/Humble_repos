@@ -3,35 +3,20 @@ controller_manager:
   ros__parameters:
     update_rate: 100  # Hz
 
-    manipulator_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
-
-
+    # UR 실제 컨트롤러는 UR 드라이버에서 관리
     gripper_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-manipulator_controller:
-  ros__parameters:
-    joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    command_interfaces:
-      []
-    state_interfaces:
-      []
+# 그리퍼만 별도 설정 (fake hardware)
 gripper_controller:
   ros__parameters:
     joints:
       - robotiq_hande_left_finger_joint
     command_interfaces:
-      []
+      - position
     state_interfaces:
-      []
+      - position
+      - velocity
