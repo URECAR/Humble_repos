@@ -24,6 +24,7 @@ joint_state_broadcaster:
       - wrist_2_joint
       - wrist_3_joint
       - robotiq_hande_left_finger_joint
+      - robotiq_hande_right_finger_joint
     
     # 여러 소스에서 받아서 /joint_states로 병합
     extra_joints: []
@@ -50,6 +51,7 @@ hande_gripper_controller:
   ros__parameters:
     joints:
       - robotiq_hande_left_finger_joint
+      - robotiq_hande_right_finger_joint
     command_interfaces:
       - position
     state_interfaces:

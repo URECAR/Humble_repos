@@ -23,7 +23,7 @@ from ur10e_hande_bringup.srv import GripperControl
 
 
 class RobotiqHandeDriver(Node):
-    """Robotiq Hande 그리퍼 ROS2 드라이버 (액션 기반)"""
+    """Robotiq Hande 그리퍼 ROS2 드라이버 (mimic 동작 구현)"""
     
     def __init__(self):
         super().__init__('robotiq_hande_driver')
@@ -39,18 +39,19 @@ class RobotiqHandeDriver(Node):
         
         self.get_logger().info(f"Robotiq Hande 그리퍼 드라이버 시작: {self.mode} 모드")
         
-        # 상태 변수
-        self.position = 0.0  # 그리퍼 위치 (0.0 = 열림, 0.025 = 닫힘) - 실제 거리(m)
-        self.target_position = 0.0  # 목표 위치
-        self.velocity = 0.0  # 속도
-        self.moving = False  # 이동 중 상태
-        self.activated = True  # 활성화 상태
-        self.object_detected = False  # 물체 감지 상태
+        # 상태 변수 - 실제로는 하나의 위치값으로 제어
+        self.position = 0.0        # 실제 그리퍼 위치 (왼쪽 기준)
+        self.target_position = 0.0 # 목표 위치
+        self.velocity = 0.0        # 속도
+        
+        self.moving = False
+        self.activated = True
+        self.object_detected = False
         
         # 시뮬레이션용 변수
         self.movement_active = False
         self.movement_start_time = None
-        self.movement_duration = 1.0  # 1초 동안 이동
+        self.movement_duration = 1.0
         
         # 액션 상태 관리
         self.current_action_goal = None
@@ -60,9 +61,9 @@ class RobotiqHandeDriver(Node):
         self._init_ros_interfaces()
         
         # 상태 업데이트 타이머
-        self.update_timer = self.create_timer(0.1, self.update_state)  # 10Hz
+        self.update_timer = self.create_timer(0.1, self.update_state)
         
-        self.get_logger().info("Robotiq Hande 그리퍼 드라이버 초기화 완료")
+        self.get_logger().info("Robotiq Hande 그리퍼 드라이버 초기화 완료 (mimic 동작)")
     
     def _init_ros_interfaces(self):
         """ROS2 인터페이스 초기화"""
@@ -81,13 +82,11 @@ class RobotiqHandeDriver(Node):
         self.cmd_sub = self.create_subscription(
             Robotiq2FGripperCommand, 'robotiq_hande/command', self.command_callback, 10)
         
-        # 액션 서버들
-        # MoveIt과 호환되는 FollowJointTrajectory 액션 (표준 네임스페이스)
+        # 액션 서버들 - 두 조인트 모두 포함
         self.trajectory_action_server = ActionServer(
             self, FollowJointTrajectory, 'hande_gripper_controller/follow_joint_trajectory',
             self.execute_trajectory)
         
-        # 그리퍼 제어용 GripperCommand 액션 (별도)
         self.gripper_action_server = ActionServer(
             self, GripperCommand, 'robotiq_hande/gripper_action',
             self.execute_gripper_command)
@@ -96,7 +95,7 @@ class RobotiqHandeDriver(Node):
         self.control_service = self.create_service(
             GripperControl, 'robotiq_hande/control', self.handle_control_service)
         
-        self.get_logger().info("MoveIt 호환 액션 서버: /hande_gripper_controller/follow_joint_trajectory")
+        self.get_logger().info("MoveIt 호환 액션 서버: /hande_gripper_controller/follow_joint_trajectory (mimic 동작)")
         self.get_logger().info("그리퍼 액션 서버: /robotiq_hande/gripper_action")
         self.get_logger().info("그리퍼 제어 서비스: /robotiq_hande/control")
     
@@ -153,7 +152,7 @@ class RobotiqHandeDriver(Node):
         return result
     
     def execute_trajectory(self, goal_handle):
-        """MoveIt trajectory 실행 (MoveIt 기대에 맞게 개선)"""
+        """MoveIt trajectory 실행 (mimic 동작 구현)"""
         self.get_logger().info('MoveIt 궤적 실행 요청 수신')
         
         trajectory = goal_handle.request.trajectory
@@ -163,70 +162,101 @@ class RobotiqHandeDriver(Node):
             goal_handle.abort()
             return FollowJointTrajectory.Result()
         
-        # 조인트 이름 확인
-        if 'robotiq_hande_left_finger_joint' not in trajectory.joint_names:
-            self.get_logger().warn(f'그리퍼 조인트가 궤적에 없습니다. 조인트: {trajectory.joint_names}')
-            goal_handle.abort()
-            return FollowJointTrajectory.Result()
+        # 조인트 인덱스 찾기
+        left_idx = None
+        right_idx = None
         
-        # 그리퍼 조인트 인덱스 찾기
         try:
-            gripper_index = trajectory.joint_names.index('robotiq_hande_left_finger_joint')
+            if 'robotiq_hande_left_finger_joint' in trajectory.joint_names:
+                left_idx = trajectory.joint_names.index('robotiq_hande_left_finger_joint')
+            if 'robotiq_hande_right_finger_joint' in trajectory.joint_names:
+                right_idx = trajectory.joint_names.index('robotiq_hande_right_finger_joint')
         except ValueError:
-            self.get_logger().error('그리퍼 조인트를 찾을 수 없습니다')
+            pass
+        
+        if left_idx is None and right_idx is None:
+            self.get_logger().warn(f'그리퍼 조인트가 궤적에 없습니다. 조인트: {trajectory.joint_names}')
             goal_handle.abort()
             return FollowJointTrajectory.Result()
         
         # 마지막 포인트의 위치를 목표로 설정
         target_point = trajectory.points[-1]
-        if not target_point.positions or len(target_point.positions) <= gripper_index:
-            self.get_logger().error('궤적 포인트에 위치 정보가 없습니다')
-            goal_handle.abort()
-            return FollowJointTrajectory.Result()
         
-        target_pos = target_point.positions[gripper_index]
-        target_pos = max(0.0, min(target_pos, 0.025))  # 범위 제한
+        # 왼쪽 조인트 기준으로 제어 (실제 그리퍼는 하나의 액추에이터)
+        if left_idx is not None and len(target_point.positions) > left_idx:
+            self.target_position = max(0.0, min(target_point.positions[left_idx], 0.025))
+        elif right_idx is not None and len(target_point.positions) > right_idx:
+            # 오른쪽만 있는 경우도 처리 (같은 값 사용)
+            self.target_position = max(0.0, min(target_point.positions[right_idx], 0.025))
         
-        # MoveIt이 지정한 시간 사용 (중요!)
+        # 시간 설정
         trajectory_time = target_point.time_from_start.sec + target_point.time_from_start.nanosec * 1e-9
         if trajectory_time <= 0:
-            trajectory_time = 0.5  # 기본값
+            trajectory_time = 0.5
         
-        # MoveIt 시간에 맞춰 이동 시간 조정
-        self.movement_duration = min(trajectory_time, 2.0)  # 최대 2초
+        self.movement_duration = min(trajectory_time, 2.0)
         
-        self.get_logger().info(f'MoveIt 목표: {target_pos:.4f}m, 시간: {trajectory_time:.2f}s (실제: {self.movement_duration:.2f}s)')
+        self.get_logger().info(f'MoveIt 목표: {self.target_position:.4f}m (mimic으로 양쪽 동일), 시간: {trajectory_time:.2f}s')
         
-        self.target_position = target_pos
         self.start_movement_simulation()
         
         # 이동 완료 대기 (피드백 포함)
         feedback_msg = FollowJointTrajectory.Feedback()
-        feedback_msg.joint_names = ['robotiq_hande_left_finger_joint']
+        joint_names = []
+        if left_idx is not None:
+            joint_names.append('robotiq_hande_left_finger_joint')
+        if right_idx is not None:
+            joint_names.append('robotiq_hande_right_finger_joint')
+        
+        feedback_msg.joint_names = joint_names
         
         start_time = time.time()
-        feedback_rate = 20  # 20Hz 피드백
+        feedback_rate = 20
         
         while self.moving:
             elapsed = time.time() - start_time
             
-            # 타임아웃 체크 (여유 시간 추가)
             if elapsed > (self.movement_duration + 0.5):
                 self.get_logger().warn(f'MoveIt 궤적 실행 타임아웃: {elapsed:.2f}s')
                 goal_handle.abort()
                 return FollowJointTrajectory.Result()
             
-            # 고빈도 피드백 발행
+            # 피드백 발행 (mimic: 양쪽 동일한 값)
             feedback_msg.header.stamp = self.get_clock().now().to_msg()
-            feedback_msg.actual.positions = [self.position]
-            feedback_msg.actual.velocities = [self.velocity]
-            feedback_msg.desired.positions = [target_pos]
-            feedback_msg.desired.velocities = [0.0]
-            feedback_msg.error.positions = [target_pos - self.position]
-            feedback_msg.error.velocities = [0.0 - self.velocity]
+            
+            actual_positions = []
+            actual_velocities = []
+            desired_positions = []
+            desired_velocities = []
+            error_positions = []
+            error_velocities = []
+            
+            if left_idx is not None:
+                actual_positions.append(self.position)
+                actual_velocities.append(self.velocity)
+                desired_positions.append(self.target_position)
+                desired_velocities.append(0.0)
+                error_positions.append(self.target_position - self.position)
+                error_velocities.append(0.0 - self.velocity)
+            
+            if right_idx is not None:
+                # 오른쪽도 같은 값 (mimic 동작)
+                actual_positions.append(self.position)
+                actual_velocities.append(self.velocity)
+                desired_positions.append(self.target_position)
+                desired_velocities.append(0.0)
+                error_positions.append(self.target_position - self.position)
+                error_velocities.append(0.0 - self.velocity)
+            
+            feedback_msg.actual.positions = actual_positions
+            feedback_msg.actual.velocities = actual_velocities
+            feedback_msg.desired.positions = desired_positions
+            feedback_msg.desired.velocities = desired_velocities
+            feedback_msg.error.positions = error_positions
+            feedback_msg.error.velocities = error_velocities
             
             goal_handle.publish_feedback(feedback_msg)
-            time.sleep(1.0 / feedback_rate)  # 20Hz
+            time.sleep(1.0 / feedback_rate)
         
         self.get_logger().info(f'MoveIt 궤적 실행 완료: {time.time() - start_time:.2f}s')
         goal_handle.succeed()
@@ -284,7 +314,7 @@ class RobotiqHandeDriver(Node):
         return response
     
     def start_movement_simulation(self):
-        """가상 모드 이동 시뮬레이션 시작 (MoveIt 호환 개선)"""
+        """가상 모드 이동 시뮬레이션 시작 (mimic 동작)"""
         # 현재 위치 저장
         self._start_pos = self.position
         
@@ -292,10 +322,10 @@ class RobotiqHandeDriver(Node):
         self.movement_active = True
         self.movement_start_time = time.time()
         
-        self.get_logger().info(f"이동 시작: {self.position:.4f}m → {self.target_position:.4f}m (시간: {self.movement_duration:.2f}s)")
+        self.get_logger().info(f"이동 시작: {self.position:.4f}m → {self.target_position:.4f}m (mimic: 양쪽 동일)")
     
     def update_state(self):
-        """상태 업데이트 및 발행"""
+        """상태 업데이트 및 발행 (mimic 동작)"""
         current_time = time.time()
         
         # 가상 모드 시뮬레이션
@@ -331,36 +361,35 @@ class RobotiqHandeDriver(Node):
                 if self.position < 0.002:
                     self.object_detected = False
                 
-                self.get_logger().info(f"이동 완료: {self.position:.4f}m")
+                self.get_logger().info(f"이동 완료: {self.position:.4f}m (mimic: 양쪽 동일)")
         
         # 상태 발행
         self.publish_gripper_state()
     
     def publish_gripper_state(self):
-        """그리퍼 상태 발행"""
+        """그리퍼 상태 발행 (mimic 동작: 양쪽 동일한 값)"""
         current_time = self.get_clock().now()
         
-        # Joint State 발행 - 디버깅 로그 추가
+        # Joint State 발행 - 양쪽 핑거에 동일한 값 (mimic 동작)
         joint_state = JointState()
         joint_state.header.stamp = current_time.to_msg()
-        joint_state.name = ['robotiq_hande_left_finger_joint']
-        joint_state.position = [self.position]
-        joint_state.velocity = [self.velocity]
+        joint_state.name = ['robotiq_hande_left_finger_joint', 'robotiq_hande_right_finger_joint']
+        joint_state.position = [self.position, self.position]  # 양쪽 동일
+        joint_state.velocity = [self.velocity, self.velocity]  # 양쪽 동일
         joint_state.effort = []
         
         self.joint_state_pub.publish(joint_state)
         
-        
-        # Controller State 발행 (MoveIt 호환)
+        # Controller State 발행 (MoveIt 호환) - 양쪽 동일한 값
         controller_state = JointTrajectoryControllerState()
         controller_state.header.stamp = current_time.to_msg()
-        controller_state.joint_names = ['robotiq_hande_left_finger_joint']
-        controller_state.actual.positions = [self.position]
-        controller_state.actual.velocities = [self.velocity]
-        controller_state.desired.positions = [self.target_position]
-        controller_state.desired.velocities = [0.0]
-        controller_state.error.positions = [self.target_position - self.position]
-        controller_state.error.velocities = [0.0 - self.velocity]
+        controller_state.joint_names = ['robotiq_hande_left_finger_joint', 'robotiq_hande_right_finger_joint']
+        controller_state.actual.positions = [self.position, self.position]  # 양쪽 동일
+        controller_state.actual.velocities = [self.velocity, self.velocity]  # 양쪽 동일
+        controller_state.desired.positions = [self.target_position, self.target_position]  # 양쪽 동일
+        controller_state.desired.velocities = [0.0, 0.0]
+        controller_state.error.positions = [self.target_position - self.position, self.target_position - self.position]
+        controller_state.error.velocities = [0.0 - self.velocity, 0.0 - self.velocity]
         
         self.controller_state_pub.publish(controller_state)
         
@@ -378,7 +407,7 @@ class RobotiqHandeDriver(Node):
         self.status_pub.publish(status_msg)
         
         # 편의용 토픽들
-        self.width_pub.publish(Float64(data=0.05 - self.position * 2))  # 50mm 최대 폭
+        self.width_pub.publish(Float64(data=0.05 - self.position * 2))  # 총 그리퍼 폭
         self.object_pub.publish(Bool(data=self.object_detected))
         self.moving_pub.publish(Bool(data=self.moving))
         self.position_pub.publish(UInt8(data=int((self.position / 0.025) * 255)))
