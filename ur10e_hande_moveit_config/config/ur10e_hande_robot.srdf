@@ -54,7 +54,7 @@
     </group_state>
     
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="hande_ee" parent_link="wrist_3_link" group="hande_gripper" parent_group="ur_manipulator"/>
+    <end_effector name="hande_ee" parent_link="wrist_3_link" group="hande_gripper" parent_group=""/>
     
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="base_link"/>
