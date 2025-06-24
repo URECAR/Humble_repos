@@ -46,15 +46,13 @@
     </group_state>
     <group_state name="closed" group="hande_gripper">
         <joint name="robotiq_hande_left_finger_joint" value="0.0"/>
-        <joint name="robotiq_hande_right_finger_joint" value="0.0"/>
     </group_state>
     <group_state name="open" group="hande_gripper">
         <joint name="robotiq_hande_left_finger_joint" value="0.025"/>
-        <joint name="robotiq_hande_right_finger_joint" value="0.025"/>
     </group_state>
     
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="hande_ee" parent_link="wrist_3_link" group="hande_gripper" parent_group=""/>
+    <end_effector name="hande_ee" parent_link="wrist_3_link" group="hande_gripper" parent_group="ur_manipulator"/>
     
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="base_link"/>

@@ -122,7 +122,7 @@
       <child link="${prefix}robotiq_hande_right_finger"/>
       <axis xyz="-1 0 0"/>
       <limit effort="130" lower="${grip_pos_min}" upper="${grip_pos_max}" velocity="0.15"/>
-      <!-- <mimic joint="${prefix}robotiq_hande_left_finger_joint" multiplier="1" offset="0"/> -->
+      <mimic joint="${prefix}robotiq_hande_left_finger_joint" multiplier="1" offset="0"/>
     </joint>
 
     <link name="${prefix}robotiq_hande_right_finger">
