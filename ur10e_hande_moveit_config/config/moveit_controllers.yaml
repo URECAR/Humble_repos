@@ -4,7 +4,8 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 
 moveit_simple_controller_manager:
   controller_names:
-    - scaled_joint_trajectory_controller  # 실제 UR 컨트롤러
+    - scaled_joint_trajectory_controller
+    - hande_gripper_controller  # 추가
 
   scaled_joint_trajectory_controller:
     type: FollowJointTrajectory
@@ -16,3 +17,10 @@ moveit_simple_controller_manager:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
+
+  # 그리퍼 컨트롤러 추가
+  hande_gripper_controller:
+    type: GripperCommand
+    action_ns: gripper_cmd
+    joints:
+      - robotiq_hande_left_finger_joint
