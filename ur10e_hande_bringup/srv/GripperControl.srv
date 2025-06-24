@@ -1,0 +1,10 @@
+# Robotiq Hande 그리퍼 제어 서비스
+# 이 서비스는 그리퍼에 다양한 명령을 전송하는데 사용됩니다.
+
+# 요청 (Request)
+uint8 command_type    # 명령 유형 (0: 위치, 1: 속도, 2: 힘, 3: 열기, 4: 닫기, 5: 리셋)
+uint8 value           # 명령 값 (0-255)
+---
+# 응답 (Response)
+bool success          # 명령 성공 여부
+string message        # 상태 메시지
