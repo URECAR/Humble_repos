@@ -18,8 +18,10 @@
         <joint name="wrist_3_joint"/>
     </group>
     <group name="hande_gripper">
+        <link name="robotiq_hande_left_finger"/>
+        <link name="robotiq_hande_right_finger"/>
         <joint name="robotiq_hande_left_finger_joint"/>
-        <joint name="robotiq_hande_right_finger_joint"/>
+        <passive_joint name="robotiq_hande_right_finger_joint"/>
     </group>
     <!-- 전체 매니퓰레이터 그룹 (MoveIt 호환) -->
     <group name="manipulator">

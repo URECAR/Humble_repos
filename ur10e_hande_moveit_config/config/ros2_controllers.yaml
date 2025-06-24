@@ -11,7 +11,7 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     
     hande_gripper_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: position_controllers/GripperActionController
 
 # Joint State Broadcaster (핵심: 모든 조인트 상태 병합)
 joint_state_broadcaster:
@@ -24,10 +24,8 @@ joint_state_broadcaster:
       - wrist_2_joint
       - wrist_3_joint
       - robotiq_hande_left_finger_joint
-      - robotiq_hande_right_finger_joint
     
-    # 여러 소스에서 받아서 /joint_states로 병합
-    extra_joints: []
+
 
 # UR10e 조인트 컨트롤러
 scaled_joint_trajectory_controller:
@@ -49,12 +47,4 @@ scaled_joint_trajectory_controller:
 # Hande 그리퍼 컨트롤러
 hande_gripper_controller:
   ros__parameters:
-    joints:
-      - robotiq_hande_left_finger_joint
-      - robotiq_hande_right_finger_joint
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
-    allow_partial_joints_goal: true
+    joint: robotiq_hande_left_finger_joint

@@ -5,7 +5,6 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 moveit_simple_controller_manager:
   controller_names:
     - scaled_joint_trajectory_controller  # 실제 UR 컨트롤러
-    - hande_gripper_controller            # Hande 그리퍼 컨트롤러
 
   scaled_joint_trajectory_controller:
     type: FollowJointTrajectory
@@ -17,10 +16,3 @@ moveit_simple_controller_manager:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-
-  hande_gripper_controller:
-    type: FollowJointTrajectory  # 2F-140 드라이버와 호환
-    action_ns: follow_joint_trajectory
-    joints:
-      - robotiq_hande_left_finger_joint
-      - robotiq_hande_right_finger_joint
