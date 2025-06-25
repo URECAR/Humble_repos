@@ -20,7 +20,6 @@ public:
 
     bool init(rclcpp::Node::SharedPtr node);
     bool plan(size_t max_solutions);
-    bool execute();
 
 private:
     void setupDemoScene();

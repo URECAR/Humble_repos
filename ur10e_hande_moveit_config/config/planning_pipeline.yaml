@@ -1,29 +1,20 @@
-# 기본 플래너를 OMPL로 설정
+# OMPL을 기본 플래너로 명시적 설정
 default_planning_pipeline: ompl
 
-planning_pipelines: 
-  - ompl
-  - chomp
-  - pilz_industrial_motion_planner
-
-# OMPL 파이프라인 설정
 ompl:
   planning_plugin: ompl_interface/OMPLPlanner
-  planning_config_loader: "moveit_ros_planning/DynamicReconfigureLoader"
-  default_planner_config: RRTConnectkConfigDefault
   request_adapters: >-
     default_planner_request_adapters/AddTimeOptimalParameterization
     default_planner_request_adapters/FixWorkspaceBounds
     default_planner_request_adapters/FixStartStateBounds
     default_planner_request_adapters/FixStartStateCollision
     default_planner_request_adapters/FixStartStatePathConstraints
+  start_state_max_bounds_error: 0.1
 
-# CHOMP 파이프라인 설정  
-chomp:
-  planning_plugin: chomp_interface/CHOMPPlanner
-  request_adapters: ""
+# CHOMP 비활성화
+# chomp:
+#   planning_plugin: chomp_interface/CHOMPPlanner
 
-# Pilz 파이프라인 설정
 pilz_industrial_motion_planner:
   planning_plugin: pilz_industrial_motion_planner/CommandPlanner
   request_adapters: ""
