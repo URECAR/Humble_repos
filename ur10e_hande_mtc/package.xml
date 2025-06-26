@@ -13,6 +13,7 @@
   <depend>rclcpp</depend>
   <depend>moveit_core</depend>
   <depend>moveit_task_constructor_core</depend>
+  <depend>moveit_task_constructor_msgs</depend>
   <depend>moveit_ros_planning_interface</depend>
   <depend>moveit_ros_planning</depend>
   <depend>moveit_ros_move_group</depend>
@@ -39,6 +40,10 @@
   <depend>rviz_common</depend>
   <depend>rviz_default_plugins</depend>
 
+  <!-- ROS control -->
+  <depend>controller_manager</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>joint_state_broadcaster</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

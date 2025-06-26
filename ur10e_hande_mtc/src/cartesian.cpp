@@ -103,7 +103,7 @@ Task createTask(const rclcpp::Node::SharedPtr& node) {
 	{  // perform a Cartesian motion, defined as a relative offset in joint space
 		auto stage = std::make_unique<stages::MoveRelative>("joint offset", cartesian_interpolation);
 		stage->setGroup(group);
-		std::map<std::string, double> offsets = { { "ur_base_link", M_PI / 6. }, { "ur_forearm_link", -M_PI / 6 } };
+		std::map<std::string, double> offsets = { { "ur_shoulder_pan_joint", M_PI / 6. }, { "ur_elbow_joint", -M_PI / 6 } };
 		stage->setDirection(offsets);
 		t.add(std::move(stage));
 	}
