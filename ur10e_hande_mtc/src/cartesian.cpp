@@ -63,7 +63,7 @@ Task createTask(const rclcpp::Node::SharedPtr& node) {
 	auto scene = std::make_shared<planning_scene::PlanningScene>(t.getRobotModel());
 	{
 		auto& state = scene->getCurrentStateNonConst();
-		state.setToDefaultValues(state.getJointModelGroup(group), "ready");
+		state.setToDefaultValues(state.getJointModelGroup(group), "home");
 
 		auto fixed = std::make_unique<stages::FixedState>("initial state");
 		fixed->setState(scene);
