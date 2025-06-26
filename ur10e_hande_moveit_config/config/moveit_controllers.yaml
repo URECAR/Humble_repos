@@ -4,23 +4,21 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 
 moveit_simple_controller_manager:
   controller_names:
-    - scaled_joint_trajectory_controller
-    - hande_gripper_controller  # 추가
+    - group_ur_controller
+    - group_gr_controller
 
-  scaled_joint_trajectory_controller:
+  group_ur_controller:
     type: FollowJointTrajectory
-    action_ns: follow_joint_trajectory
     joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-
-  # 그리퍼 컨트롤러 추가
-  hande_gripper_controller:
+      - ur_shoulder_pan_joint
+      - ur_shoulder_lift_joint
+      - ur_elbow_joint
+      - ur_wrist_1_joint
+      - ur_wrist_2_joint
+      - ur_wrist_3_joint
+  group_gr_controller:
     type: GripperCommand
-    action_ns: gripper_cmd
     joints:
-      - robotiq_hande_left_finger_joint
+      - gr_hande_left_finger_joint
+    action_ns: gripper_cmd
+    default: true

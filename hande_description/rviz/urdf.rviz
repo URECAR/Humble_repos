@@ -51,26 +51,26 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        robotiq_hande_coupler:
+        hande_coupler:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        robotiq_hande_end:
+        hande_end:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        robotiq_hande_left_finger:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        robotiq_hande_link:
+        hande_left_finger:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        robotiq_hande_right_finger:
+        hande_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        hande_right_finger:
           Alpha: 1
           Show Axes: false
           Show Trail: false

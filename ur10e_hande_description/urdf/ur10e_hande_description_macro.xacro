@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
+<!-- macro.xacro 는 아주 기본적인 로봇 세팅 파일. urdf.xacro는 macro.xacro에서 세팅에 필요한 인자를 주고 스폰시키는 완성 파일. -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
-  <xacro:include filename="$(find hande_description)/urdf/robotiq_hande_gripper.xacro"/> <!-- 그리퍼 추가 -->
+  <xacro:include filename="$(find hande_description)/urdf/hande_gripper.xacro"/> <!-- 그리퍼 추가 -->
 
   <xacro:macro name="ur10e_hande_robot" params="
     parent
@@ -12,27 +13,30 @@
     physical_parameters_file
     visual_parameters_file
     use_fake_hardware
+    ur_prefix
+    gripper_prefix
     ">
 
-    <!--This will create the specific robot-->
+    <!-- 네임스페이스 = MANIPULATOR, GRIPPER -->
+    <!-- fake_hardware 사용 가능              -->
     <xacro:ur_robot
       name="${ur_type}"
-      tf_prefix=""
+      tf_prefix="${ur_prefix}"
       parent="world"
       joint_limits_parameters_file="${joint_limits_parameters_file}"
       kinematics_parameters_file="${kinematics_parameters_file}"
       physical_parameters_file="${physical_parameters_file}"
       visual_parameters_file="${visual_parameters_file}"
-      use_fake_hardware="${use_fake_hardware}"  
+      use_fake_hardware="${use_fake_hardware}"   
       use_tool_communication="true"
       generate_ros2_control_tag="true"
     >
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:ur_robot>
-    <xacro:robotiq_hande_gripper
-      name="robotiq_hande_gripper"
-      prefix=""
-      parent="tool0"
+    <xacro:hande_gripper
+      name="hande_gripper"
+      prefix="${gripper_prefix}"
+      parent="${ur_prefix}tool0"
       grip_pos_min="0"
       grip_pos_max="0.025"
       tty="/tmp/ttyUR"
