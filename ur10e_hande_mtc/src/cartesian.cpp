@@ -48,23 +48,24 @@ using namespace moveit::task_constructor;
 
 Task createTask(const rclcpp::Node::SharedPtr& node) {
 	Task t;
-	t.stages()->setName("Cartesian Path");
+	t.stages()->setName("Lets_go");
 
 	const std::string group = "group_ur";
 	const std::string eef = "group_gr";
-
-	// create Cartesian interpolation "planner" to be used in various stages
+	//  두 이동 플래너(솔버) 초기화, cartesian_interpolation, joint_interpolation
 	auto cartesian_interpolation = std::make_shared<solvers::CartesianPath>();
-	// create a joint-space interpolation "planner" to be used in various stages
 	auto joint_interpolation = std::make_shared<solvers::JointInterpolationPlanner>();
 
-	// start from a fixed robot state
+	// 로봇 모델 로드
 	t.loadRobotModel(node);
+	// Planning Scene 생성 (충돌환경 포함)
 	auto scene = std::make_shared<planning_scene::PlanningScene>(t.getRobotModel());
 	{
+		// scene의 NonConst(수정가능한) 로봇 상태를 state 라는 참조 변수에 저장
 		auto& state = scene->getCurrentStateNonConst();
+		// 현재 상태를 home 포즈로 명시적으로 지정.
 		state.setToDefaultValues(state.getJointModelGroup(group), "home");
-
+		// 초기 상태를 FixedState로 등록 
 		auto fixed = std::make_unique<stages::FixedState>("initial state");
 		fixed->setState(scene);
 		t.add(std::move(fixed));
@@ -91,11 +92,11 @@ Task createTask(const rclcpp::Node::SharedPtr& node) {
 	}
 
 	{  // rotate about TCP
-		auto stage = std::make_unique<stages::MoveRelative>("rz +45°", cartesian_interpolation);
+		auto stage = std::make_unique<stages::MoveRelative>("rx +45°", cartesian_interpolation);
 		stage->setGroup(group);
 		geometry_msgs::msg::TwistStamped twist;
 		twist.header.frame_id = "world";
-		twist.twist.angular.z = M_PI / 4.;
+		twist.twist.angular.x = M_PI / 4.;
 		stage->setDirection(twist);
 		t.add(std::move(stage));
 	}
