@@ -69,6 +69,7 @@ Task createTask(const rclcpp::Node::SharedPtr& node) {
 		auto fixed = std::make_unique<stages::FixedState>("initial state");
 		fixed->setState(scene);
 		t.add(std::move(fixed));
+
 	}
 
 	{

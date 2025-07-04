@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur10e_hande_robot">
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="ur10e_hande_robot">
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+    <xacro:arg name="use_fake_hardware" default="true" />
 
     <!-- Import ur10e_hande_robot urdf file -->
     <xacro:include filename="$(find ur10e_hande_description)/urdf/ur10e_hande_description.urdf.xacro" />
@@ -8,7 +9,9 @@
     <!-- Import control_xacro -->
     <xacro:include filename="ur10e_hande_robot.ros2_control.xacro" />
 
-
-    <xacro:ur10e_hande_robot_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+    <xacro:ur10e_hande_robot_ros2_control 
+        name="FakeSystem" 
+        initial_positions_file="$(arg initial_positions_file)"
+        use_fake_hardware="$(arg use_fake_hardware)"/>
 
 </robot>

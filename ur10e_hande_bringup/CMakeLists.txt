@@ -21,7 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 # Install Python executables (robotiq_2f_140_driver.py 제거)
 install(PROGRAMS
-  scripts/robotiq_hande_driver.py
+  scripts/hande_driver.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
